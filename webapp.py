@@ -169,27 +169,34 @@ def current_video_service():
                  (CONFIG['CONGREGATION_NAME'], live['countNeeded']))
         return jsonify(live)
     else:
+        rec = {
+            'url': "/processing_en.mp4",
+            'congregation': CONFIG['CONGREGATION_NAME'],
+            'live': False,
+            'poster': '/posters/processing_mp4_en.jpg',
+            'meetingDateString': '',
+            'countNeeded': False,
+            'pollInterval': (CONFIG['POLL_INTERVAL'] * 2)
+        }
         recdir = "%s/static/recordings" % os.path.dirname(
             os.path.realpath(__file__))
         list_of_recs = glob.glob("%s/*" % recdir)
-        recording_file = 'processing.mp4'
         if list_of_recs:
             latest_rec = max(list_of_recs, key=os.path.getmtime)
             recording_file = os.path.basename(latest_rec)
             datestring = datetime.datetime.fromtimestamp(
                 os.path.getmtime(latest_rec)).strftime('%m-%d-%Y')
             LOG.info('directing cliet to %s meeting recording %s from %s' %
-                     (CONFIG['CONGREGATION_NAME'], recording_file, datestring))
-                     
-        rec = {
-            'url': "/recordings/%s" % recording_file,
-            'congregation': CONFIG['CONGREGATION_NAME'],
-            'live': False,
-            'poster': '/posters/%s' % make_recording_poster(recording_file, CONFIG['CONGREGATION_NAME'], datestring),
-            'meetingDateString': datestring,
-            'countNeeded': False,
-            'pollInterval': (CONFIG['POLL_INTERVAL'] * 2)
-        }
+                     (CONFIG['CONGREGATION_NAME'], recording_file, datestring))    
+            rec = {
+                'url': "/recordings/%s" % recording_file,
+                'congregation': CONFIG['CONGREGATION_NAME'],
+                'live': False,
+                'poster': '/posters/%s' % make_recording_poster(recording_file, CONFIG['CONGREGATION_NAME'], datestring),
+                'meetingDateString': datestring,
+                'countNeeded': False,
+                'pollInterval': (CONFIG['POLL_INTERVAL'] * 2)
+            }
         return jsonify(rec)
 
 
@@ -222,6 +229,7 @@ def index():
             return render_template('viewerpin.html')
         else:
             return render_template('getvideo.html')
+        return render_template('getvideo.html')
 
 
 @app.route('/<path:path>')

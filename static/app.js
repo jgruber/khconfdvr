@@ -85,7 +85,7 @@ var showVideo = function (url, poster) {
         playbackNotSupportedMessage: 'Please stand by.. stream playback interupted'
     });
     player.on(Clappr.Events.PLAYER_ERROR, function () {
-        showVideo('/recordings/processing.mp4');
+        showVideo('/processing_en.mp4');
         setTimeout(function () {
             getVideoUrl();
         }, 10000);
@@ -110,8 +110,10 @@ var togglePlay = function () {
 
 osdContent = function (content) {
     var osd = document.getElementById('osd');
+    var osmenu = document.getElementById('osmenu');
     var osdContent = document.getElementById('osdContent');
     if (content) {
+        osmenu.style.setProperty('display', 'none');
         osdContent.innerHTML = content;
         bindKeyboard = false;
         osd.style.setProperty('opacity', 0);
@@ -119,6 +121,7 @@ osdContent = function (content) {
         osd.style.setProperty('opacity', 1);
         osd.style.setProperty('z-index', 1000);
     } else {
+        osmenu.style.setProperty('display', 'block');
         osd.style.setProperty('opacity', 0);
         osd.style.setProperty('z-index', 10);
         var clearScreen = setInterval(function () {
@@ -200,20 +203,22 @@ var setConfig = function () {
 var getViewerPin = function (message) {
     var formContent = `
 <form id='viewerPinForm' onSubmit='setViewerPin()'>
-    <label> PIN </label> <input id='viewerpin' type='number' min='1', max='99', style='width=4vw;'>
+    <label> PIN </label> <input id='viewerpin' maxlength='6' size='6'
+        onkeypress='return event.charCode == 13 || (event.charCode >= 48 && event.charCode <= 57)'>
 </form>
 <button type='submit' value='Submit' form='viewerPinForm'>Enter</button>
 `;
     if (message) {
-        formContent = "<p>" + message + "</p>" + formContent;
+        formContent = '<p>' + message + '</p>' + formContent;
     }
     osdContent(formContent);
-    document.getElementById('viewerpin').focus();
+    var pininput = document.getElementById('viewerpin')
+    if(pininput) pininput.focus();
 };
 
 
 var setViewerPin = function () {
-    console.log('submitting Count');
+    console.log('submitting viewer PIN');
     var viewerpinEl = document.getElementById('viewerpin');
     if (viewerpinEl) {
         var viewerpin = viewerpinEl.value;
@@ -223,7 +228,7 @@ var setViewerPin = function () {
                 osdContent(null);
                 getVideoUrl();
             } else {
-                console.log('wrong view pin');
+                console.log('wrong viewer pin');
                 getViewerPin('Incorrect PIN');
             }
         });
