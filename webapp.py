@@ -41,6 +41,8 @@ CONFIG = {
 
 CONFIG_FILE = None
 
+LOGFORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
 congregationName = None
 liveMeetingVriId = None
 liveMeetingVdrId = None
@@ -49,8 +51,7 @@ liveMeetingCounts = {}
 inMeeting = False
 
 consoleLog = logging.StreamHandler()
-consoleLog.setFormatter(logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+consoleLog.setFormatter(logging.Formatter(LOGFORMAT))
 
 LOG = logging.getLogger('KHConf DVR Services')
 LOG.addHandler(consoleLog)
@@ -59,9 +60,9 @@ requests_log = logging.getLogger("requests.packages.urllib3")
 requests_log.propagate = True
 
 class KHConfDVRFlask(Flask):
-    def run(self, host=None, port=None, load_dotenv=True, **options):
+    def run(self, host=None, port=None, **options):
         initialize()
-        super(KHConfDVRFlask, self).run(host=host, port=port, load_dotenv=load_dotenv, **options)
+        super(KHConfDVRFlask, self).run(host=host, port=port, **options)
 
 
 app = KHConfDVRFlask('khconfdvr')
@@ -408,7 +409,17 @@ def initialize():
     load_config(config_file)
     if not CONFIG['DEVICE_ID']:
         CONFIG['DEVICE_ID'] = str(uuid.uuid4())
-        save_config()
+        save_config()  
+    log_file = os.getenv('LOGFILE', CONFIG['LOGFILE'])
+    if log_file:
+        LOG.info('switching to file logging: %s' % log_file)
+        fileLog = logging.FileHandler(log_file)
+        fileLog.setFormatter(logging.Formatter(LOGFORMAT))
+        LOG.removeHandler(consoleLog)
+        LOG.addHandler(fileLog)
+        app.logger.removeHandler(consoleLog)
+        app.logger.addHandler(fileLog)
+
     LOG.setLevel(CONFIG['LOGLEVEL'])
     requests_log.setLevel(CONFIG['LOGLEVEL'])
     app.logger.setLevel(CONFIG['LOGLEVEL'])

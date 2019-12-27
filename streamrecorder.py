@@ -14,8 +14,10 @@ import time
 FFMPEGCMD = '/usr/bin/ffmpeg'
 ARGS = '-c copy'
 
+LOGFORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
 consoleLog = logging.StreamHandler()
-consoleLog.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+consoleLog.setFormatter(logging.Formatter(LOGFORMAT))
 
 LOG = logging.getLogger('HLS Recorder')
 LOG.addHandler(consoleLog)
@@ -134,6 +136,14 @@ def main():
     LOG.setLevel(logging.DEBUG)
     config_file = os.getenv('CONFIG_FILE', None)
     load_config(config_file)
+    log_file = os.getenv('LOGFILE', CONFIG['LOGFILE'])
+    if log_file:
+        LOG.info('switching to file logging: %s' % log_file)
+        fileLog = logging.FileHandler(log_file)
+        fileLog.setFormatter(logging.Formatter(LOGFORMAT))
+        LOG.removeHandler(consoleLog)
+        LOG.addHandler(fileLog)
+
     LOG.setLevel(CONFIG['LOGLEVEL'])
     
     recorder_thread = recorderThread()

@@ -1,3 +1,5 @@
 .vscode/*
 .venv/*
+static/recordings/*
+static/posters/!blank.jpg
 __pycache__
