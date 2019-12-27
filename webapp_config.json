@@ -1,0 +1,9 @@
+{
+    "WEB_SERVICE_PORT": 3100,
+    "LOGLEVEL": 10,
+    "POLL_INTERVAL": 20,
+    "DEVICE_ID": null,
+    "TOKEN": null,
+    "ADMIN_PIN": null,
+    "CONGREGATION_NAME": null
+}

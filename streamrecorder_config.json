@@ -1,0 +1,8 @@
+{
+    "WEB_SERVER_HOST": "localhost",
+    "WEB_SERVICE_PORT": 3100,
+    "LOGLEVEL": 10,
+    "POLL_INTERVAL": 20,
+    "RECORDER_TEMP_DIR": null,
+    "RECORDER_FILE_TYPE": "mp4"
+}

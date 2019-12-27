@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title> KHConf DVR </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <meta name="robots" content="noindex">
+    <script type="text/javascript" charset="utf-8" src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
+    <link rel="stylesheet" href="/app.css" type="text/css" />
+</head>
+
+<body>
+    <a class='osmenu' id='osmenu' onclick='showMenu()'></a>
+    <div id='osd' class='osd' style='display: none;'>
+      <div id='osdContent' class='osdContent'>
+      </div>
+    </div>
+    <div id='player' class='videoDisplay'></div>
+    <script type="text/javascript" charset="utf-8" src="/app.js"></script>
+    {% block osdform %}{% endblock %}
+    {% block initscript %}{% endblock %}
+</body>
+
+</html>

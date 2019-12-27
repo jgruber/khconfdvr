@@ -1,0 +1,73 @@
+.videoDisplay {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: black;
+    z-index: 1;
+}
+
+.osd {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background-color: rgba(50, 50, 100, 0.9);
+    z-index: 10;
+    opacity: 0;
+    -webkit-transition: all 1s ease-in-out;
+    -moz-transition: all 1s ease-in-out;
+    -ms-transition: all 1s ease-in-out;
+    -o-transition: all 1s ease-in-out;
+    transition: all 1s ease-in-out;
+}
+
+.osdContent {
+    position:relative;
+    width: 80%;
+    top: 2vw;
+    text-align: center;
+    margin: auto;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 6vw;
+}
+
+.osdContent input {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1em;
+    text-align: center;
+    background-color: rgb(20, 20, 20);
+    color: white;
+    border-color: black;
+    border-width: 2px;
+}
+
+.osdContent button {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1em;
+    text-align: center;
+    background-color: rgb(20, 20, 20);
+    color: white;
+    margin-top: 4vw;
+    padding-left: 2vw;
+    padding-right: 2vw;
+}
+
+.osmenu {
+    position: absolute;
+    top: 1.5vw;
+    left: 1.5vw;
+    background-image: url('/menu.svg');
+    background-size: 3vw;
+    background-color: #909090;
+    height: 3vw;
+    width: 3vw;
+    z-index: 20;
+}
+
+.osmenuclicked {
+    transform: translate(2px, 2px);
+}

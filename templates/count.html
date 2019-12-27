@@ -1,0 +1,14 @@
+{% extends 'index.html' %}
+
+{% block osdform %}
+<script>
+var formContent=` 
+<form id='count' onSubmit='setCount()'>
+    <label>COUNT</label></br><input id='count' type='number' min='1' max='20' style='width: 6vw;'><br />
+</form>
+<button type='submit' value='Submit' form='count'>Enter</button>
+`;
+osdContent(formContent);
+getVideoUrl();
+</script>
+{% endblock %}
