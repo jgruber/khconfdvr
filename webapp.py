@@ -35,6 +35,7 @@ CONFIG = {
     'DEVICE_ID': None,
     'TOKEN': None,
     'ADMIN_PIN': None,
+    'VIEWER_PIN': '000000',
     'CONGREGATION_NAME': None
 }
 

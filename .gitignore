@@ -1,5 +1,6 @@
 .vscode/*
 .venv/*
-static/recordings/*
+static/recordings/!processing.mp4
 static/posters/!blank.jpg
+static/posters/!processing_mp4.jpg
 __pycache__

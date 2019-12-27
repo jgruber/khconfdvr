@@ -1,0 +1,12 @@
+[Unit]
+Description=KHConfDVR Web Service
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/lib/khconfdvr
+ExecStart=/var/lib/khconfdvr/streamrecorder.py
+
+[Install]
+WantedBy=multi-user.target

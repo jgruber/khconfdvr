@@ -85,8 +85,8 @@ var showVideo = function (url, poster) {
         playbackNotSupportedMessage: 'Please stand by.. stream playback interupted'
     });
     player.on(Clappr.Events.PLAYER_ERROR, function () {
-        showVideo('/processing.mp4');
-        setTimeout(function() {
+        showVideo('/recordings/processing.mp4');
+        setTimeout(function () {
             getVideoUrl();
         }, 10000);
     });
@@ -149,12 +149,16 @@ var configure = function () {
 <form id='config' onSubmit='setConfig()'>
     <label>TOKEN</label></br><input id='token' maxlength='12' size='12'><br />
     <label>ADMIN PIN</label></br><input id='adminpin' maxlength='6' size='6'
-        onkeypress='return event.charCode >= 48 && event.charCode <= 57'>
+        onkeypress='return event.charCode >= 48 && event.charCode <= 57'><br />
+    <label>VIEWER PIN</label></br><input id='viewerpin' maxlength='6' size='6'
+        value='000000' onkeypress='return event.charCode >= 48 && event.charCode <= 57'>
 </form>
 <button type='submit' value='Submit' form='config'>Enter</button>
 `;
     osdContent(formContent);
-    player.destroy();
+    if (player) {
+        player.destroy();
+    }
     document.getElementById('token').focus();
 };
 
@@ -163,19 +167,24 @@ var setConfig = function () {
     console.log('submitting configuration');
     var tokenEl = document.getElementById('token');
     var adminpinEl = document.getElementById('adminpin');
+    var viewerpinEl = document.getElementById('viewerpin');
     var token = null;
     var adminpin = null;
+    var viewerpin = null;
     if (tokenEl) {
         token = tokenEl.value;
     }
     if (adminpinEl) {
         adminpin = adminpinEl.value;
     }
+    if (viewerpinEl) {
+        viewerpin = viewerpinEl.value;
+    }
     if (tokenEl && adminpinEl) {
         var configReq = new XMLHttpRequest();
         configReq.open('POST', '/config');
         configReq.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        configReq.send(JSON.stringify({ 'token': token, 'adminpin': adminpin }));
+        configReq.send(JSON.stringify({ 'token': token, 'adminpin': adminpin, "viewerpin": viewerpin }));
         configReq.addEventListener('load', function () {
             if (this.status == 200) {
                 osdContent(null);
@@ -184,6 +193,43 @@ var setConfig = function () {
                 console.log('could not set config.. is your adminpin correct?');
             }
         });
+    }
+};
+
+
+var getViewerPin = function (message) {
+    var formContent = `
+<form id='viewerPinForm' onSubmit='setViewerPin()'>
+    <label> PIN </label> <input id='viewerpin' type='number' min='1', max='99', style='width=4vw;'>
+</form>
+<button type='submit' value='Submit' form='viewerPinForm'>Enter</button>
+`;
+    if (message) {
+        formContent = "<p>" + message + "</p>" + formContent;
+    }
+    osdContent(formContent);
+    document.getElementById('viewerpin').focus();
+};
+
+
+var setViewerPin = function () {
+    console.log('submitting Count');
+    var viewerpinEl = document.getElementById('viewerpin');
+    if (viewerpinEl) {
+        var viewerpin = viewerpinEl.value;
+        var vpReq = new XMLHttpRequest();
+        vpReq.addEventListener('load', function () {
+            if (this.status == 200) {
+                osdContent(null);
+                getVideoUrl();
+            } else {
+                console.log('wrong view pin');
+                getViewerPin('Incorrect PIN');
+            }
+        });
+        vpReq.open('POST', '/viewerpin');
+        vpReq.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        vpReq.send(JSON.stringify({ 'viewerpin': viewerpin }));
     }
 };
 
