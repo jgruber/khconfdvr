@@ -106,12 +106,16 @@ def config_service():
                     if 'token' in config:
                         CONFIG['TOKEN'] = config['token']
                         save_config()
+                    if 'viewerpin' in config:
+                        CONFIG['VIEWER_PIN'] = config['viewerpin']
+                        save_config()
                 else:
                     LOG.error('adminpin does not match')
                     raise ClientError(
                         'adminpin does not match', status_code=401)
             else:
                 CONFIG['ADMIN_PIN'] = config['adminpin']
+                CONFIG['VIEWER_PIN'] = config['viewerpin']
                 if 'token' in config:
                     CONFIG['TOKEN'] = config['token']
                 LOG.info('initial token and admin pin set')
@@ -132,6 +136,16 @@ def config_service():
         return jsonify({'status': 'ok'})
     elif request.method == 'GET':
         return render_template('config.html')
+
+
+@app.route('/viewerpin', methods=['POST'])
+def validate_viewer_pin():
+    pin = request.json
+    if 'viewerpin' in pin and pin['viewerpin'] == CONFIG['VIEWER_PIN']:
+        return jsonify({'status': 'ok'})
+    else:
+        LOG.error('invalid viewer pin submitted by %s' % request.remote_addr)
+        raise ClientError('invalid PIN', status_code=401)
 
 
 @app.route('/video', methods=['GET'])
@@ -158,12 +172,15 @@ def current_video_service():
         recdir = "%s/static/recordings" % os.path.dirname(
             os.path.realpath(__file__))
         list_of_recs = glob.glob("%s/*" % recdir)
-        latest_rec = max(list_of_recs, key=os.path.getmtime)
-        recording_file = os.path.basename(latest_rec)
-        datestring = datetime.datetime.fromtimestamp(
-            os.path.getmtime(latest_rec)).strftime('%m-%d-%Y')
-        LOG.info('directing cliet to %s meeting recording %s from %s' %
-                 (CONFIG['CONGREGATION_NAME'], recording_file, datestring))
+        recording_file = 'processing.mp4'
+        if list_of_recs:
+            latest_rec = max(list_of_recs, key=os.path.getmtime)
+            recording_file = os.path.basename(latest_rec)
+            datestring = datetime.datetime.fromtimestamp(
+                os.path.getmtime(latest_rec)).strftime('%m-%d-%Y')
+            LOG.info('directing cliet to %s meeting recording %s from %s' %
+                     (CONFIG['CONGREGATION_NAME'], recording_file, datestring))
+                     
         rec = {
             'url': "/recordings/%s" % recording_file,
             'congregation': CONFIG['CONGREGATION_NAME'],
@@ -201,7 +218,10 @@ def index():
         LOG.info('requesting initial config and admin pin')
         return render_template('config.html')
     else:
-        return render_template('getvideo.html')
+        if CONFIG['VIEWER_PIN'] and ( not CONFIG['VIEWER_PIN'] == '000000' ):
+            return render_template('viewerpin.html')
+        else:
+            return render_template('getvideo.html')
 
 
 @app.route('/<path:path>')
