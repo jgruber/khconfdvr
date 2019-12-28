@@ -6,6 +6,7 @@ var player = null;
 var bindKeyboard = true;
 var watchForLiveStream = null;
 var waitForLiveStreamPlay = null;
+var currentCount = 1;
 
 var showMenu = function () {
     var osmenu = document.getElementById('osmenu');
@@ -240,12 +241,7 @@ var setViewerPin = function () {
 
 
 var getCount = function () {
-    var formContent = `
-<form id='countForm' onSubmit='setCount()'>
-    <label> COUNT </label> <input id='count' type='number' min='1', max='99', style='width=4vw;'>
-</form>
-<button type='submit' value='Submit' form='countForm'>Enter</button>
-`;
+    var formContent = "<form id='countForm' onSubmit='setCount()'><label> COUNT </label> <input id='count' type='number' value='" + currentCount + "' min='1', max='99', style='width=4vw;'></form><button type='submit' value='Submit' form='countForm'>Enter</button>";
     osdContent(formContent);
     document.getElementById('count').focus();
 };
@@ -256,6 +252,7 @@ var setCount = function () {
     var countEl = document.getElementById('count');
     if (countEl) {
         var count = countEl.value;
+        currentCount = count;
         var countReq = new XMLHttpRequest();
         countReq.addEventListener('load', function () {
             osdContent(null);

@@ -173,7 +173,7 @@ def current_video_service():
             'url': "/processing_en.mp4",
             'congregation': CONFIG['CONGREGATION_NAME'],
             'live': False,
-            'poster': '/posters/processing_mp4_en.jpg',
+            'poster': '/posters/blank.jpg',
             'meetingDateString': '',
             'countNeeded': False,
             'pollInterval': (CONFIG['POLL_INTERVAL'] * 2)
