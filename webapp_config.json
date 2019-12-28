@@ -1,1 +1,11 @@
-{"WEB_SERVICE_PORT": 3100, "LOGLEVEL": 10, "LOGFILE": null, "POLL_INTERVAL": 20, "DEVICE_ID": "f56e345e-c257-421a-907e-8ca4b008fe5d", "TOKEN": null, "ADMIN_PIN": null, "CONGREGATION_NAME": null}
+{
+    "WEB_SERVICE_PORT": 3100,
+    "LOGLEVEL": 10,
+    "LOGFILE": null,
+    "POLL_INTERVAL": 20,
+    "DEVICE_ID": null,
+    "TOKEN": null,
+    "ADMIN_PIN": null,
+    "VIEWER_PIN": "000000",
+    "CONGREGATION_NAME": null
+}
