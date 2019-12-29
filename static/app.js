@@ -7,16 +7,23 @@ var bindKeyboard = true;
 var watchForLiveStream = null;
 var waitForLiveStreamPlay = null;
 var currentCount = 1;
+var isLive = false;
+
 
 var showMenu = function () {
     var osmenu = document.getElementById('osmenu');
     osmenu.classList.add('osmenuclicked');
-    console.log('showing menu');
+    if(isLive) {
+        getCount();
+    } else {
+        getRecordings();
+    }
     var menuclicked = setInterval(function () {
         osmenu.classList.remove('osmenuclicked');
         clearInterval(menuclicked);
     }, 100);
 };
+
 
 var getVideoUrl = function () {
     var videoReq = new XMLHttpRequest();
@@ -24,6 +31,7 @@ var getVideoUrl = function () {
         if (this.status == 200 && this.responseText) {
             var respObj = JSON.parse(this.responseText);
             if (!respObj.live) {
+                isLive = false;
                 if (waitForLiveStreamPlay) {
                     console.log('clearing live stream play poller');
                     clearInterval(waitForLiveStreamPlay);
@@ -38,9 +46,11 @@ var getVideoUrl = function () {
                     showVideo(respObj.url, respObj.poster);
                 }
             } else {
+                isLive = true;
                 if (watchForLiveStream) {
                     console.log('clearing live stream updates poller');
                     clearInterval(watchForLiveStream);
+                    watchForLiveStream = null;
                 }
                 console.log('setting player to live video');
                 showVideo(respObj.url, respObj.poster);
@@ -87,7 +97,17 @@ var showVideo = function (url, poster) {
     });
     player.on(Clappr.Events.PLAYER_ERROR, function () {
         showVideo('/processing_en.mp4');
+        if (watchForLiveStream) {
+            console.log('clearing live stream updates poller');
+            clearInterval(watchForLiveStream);
+            watchForLiveStream = null;
+        }
+        if (waitForLiveStreamPlay) {
+            clearInterval(waitForLiveStreamPlay);
+            waitForLiveStreamPlay = null;
+        }
         setTimeout(function () {
+            console.log('recovering from playback error... ');
             getVideoUrl();
         }, 10000);
     });
@@ -100,6 +120,7 @@ var showVideo = function (url, poster) {
     player.attachTo(playerElement);
     keyboardBindings();
     bindKeyboard = true;
+    setMenu();
     window.location.hash = '#player';
 };
 
@@ -109,12 +130,34 @@ var togglePlay = function () {
     }
 };
 
+
+var setMenu = function() {
+    if(isLive) {
+        addMenu();
+    } else {
+        removeMenu();
+    }
+};
+
+var removeMenu = function() {
+    var osmenu = document.getElementById('osmenu');
+    if (osmenu) {
+        osmenu.style.setProperty('display', 'none');
+    }
+};
+
+var addMenu = function() {
+    var osmenu = document.getElementById('osmenu');
+    if (osmenu) {
+        osmenu.style.setProperty('display', 'block');
+    }
+};
+
 osdContent = function (content) {
     var osd = document.getElementById('osd');
-    var osmenu = document.getElementById('osmenu');
     var osdContent = document.getElementById('osdContent');
     if (content) {
-        osmenu.style.setProperty('display', 'none');
+        removeMenu();
         osdContent.innerHTML = content;
         bindKeyboard = false;
         osd.style.setProperty('opacity', 0);
@@ -122,7 +165,7 @@ osdContent = function (content) {
         osd.style.setProperty('opacity', 1);
         osd.style.setProperty('z-index', 1000);
     } else {
-        osmenu.style.setProperty('display', 'block');
+        setMenu();
         osd.style.setProperty('opacity', 0);
         osd.style.setProperty('z-index', 10);
         var clearScreen = setInterval(function () {
@@ -241,27 +284,44 @@ var setViewerPin = function () {
 
 
 var getCount = function () {
-    var formContent = "<form id='countForm' onSubmit='setCount()'><label> COUNT </label> <input id='count' type='number' value='" + currentCount + "' min='1', max='99', style='width=4vw;'></form><button type='submit' value='Submit' form='countForm'>Enter</button>";
+    var formContent = "<label> COUNT </label>  <span id='count'></span>  ";
+    formContent += "<input type='button' value=' + ' onclick='incrementCount();'>";
+    formContent += "<input type='button' value=' - ' onclick='deccrementCount();'><br />";
+    formContent += "<p><input type='button' value=' Enter ' onclick='setCount()'></p>";
     osdContent(formContent);
-    document.getElementById('count').focus();
+    document.getElementById('count').innerHTML = currentCount;
+};
+
+
+var incrementCount = function () {
+    currentCount++;
+    document.getElementById('count').innerHTML = currentCount;
+};
+
+
+var deccrementCount = function () {
+    currentCount--;
+    if (currentCount < 1) {
+        currentCount = 1;
+    }
+    document.getElementById('count').innerHTML = currentCount;
 };
 
 
 var setCount = function () {
     console.log('submitting Count');
-    var countEl = document.getElementById('count');
-    if (countEl) {
-        var count = countEl.value;
-        currentCount = count;
-        var countReq = new XMLHttpRequest();
-        countReq.addEventListener('load', function () {
-            osdContent(null);
-        });
-        countReq.open('POST', '/count');
-        countReq.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        countReq.send(JSON.stringify({ 'count': count }));
-    }
+    var countReq = new XMLHttpRequest();
+    countReq.addEventListener('load', function () {
+        osdContent(null);
+    });
+    countReq.open('POST', '/count');
+    countReq.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    countReq.send(JSON.stringify({ 'count': currentCount }));
 };
 
+
+var getRecordings = function() {
+    console.log('getting recordings');
+};
 
 

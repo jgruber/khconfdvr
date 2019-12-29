@@ -173,7 +173,7 @@ def current_video_service():
             'url': "/processing_en.mp4",
             'congregation': CONFIG['CONGREGATION_NAME'],
             'live': False,
-            'poster': '/posters/blank.jpg',
+            'poster': '/posters/processing_mp4_en.jpg',
             'meetingDateString': '',
             'countNeeded': False,
             'pollInterval': (CONFIG['POLL_INTERVAL'] * 2)
@@ -217,6 +217,22 @@ def submit_count():
         raise ClientError(
             'submitting count while no live meeting in progress', status_code=400)
     return jsonify({'status': 'ok'})
+
+
+@app.route('/meetings', methods=['GET'])
+def get_meetings():
+    meetings = []
+    if inMeeting:
+        now = datetime.datetime.now()
+        datestring = now.strftime('%m-%d-%Y')
+        live = {
+            'url': liveMeetingStreamUrl,
+            'congregation': CONFIG['CONGREGATION_NAME'],
+            'live': True,
+            'poster': '/posters/%s' % make_live_poster(CONFIG['CONGREGATION_NAME']),
+            'meetingDateString': datestring
+        }
+        meetings.append(live)
 
 
 @app.route('/', methods=['GET'])
@@ -267,7 +283,7 @@ def get_live_meeting_count():
 
 
 def update_meeting_status():
-    global CONFIG, inMeeting, liveMeetingVriId, liveMeetingStreamUrl, liveMeetingVdrId
+    global CONFIG, inMeeting, liveMeetingVriId, liveMeetingStreamUrl, liveMeetingVdrId, liveMeetingCounts
     if CONFIG['TOKEN'] and CONFIG['DEVICE_ID']:
         if not CONFIG['CONGREGATION_NAME']:
             LOG.info('registring this device %s with KHConf with token: %s' % (
@@ -298,16 +314,17 @@ def update_meeting_status():
                         'meeting id changed within poll cycle..')
         else:
             LOG.debug('there is no current live video stream')
-            try:
-                if liveMeetingVdrId:
-                    unregister_device(CONFIG['DEVICE_ID'], liveMeetingVdrId)
-            except:
-                pass
             inMeeting = False
             liveMeetingVriId = None
             liveMeetingVdrId = None
             liveMeetingStreamUrl = None
             liveMeetingCounts = {}
+            try:
+                if liveMeetingVdrId:
+                    unregister_device(CONFIG['DEVICE_ID'], liveMeetingVdrId)
+            except:
+                pass
+            
 
 
 def submitting_count():
