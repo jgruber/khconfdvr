@@ -180,6 +180,8 @@ def current_video_service():
         }
         recdir = "%s/static/recordings" % os.path.dirname(
             os.path.realpath(__file__))
+        if not os.path.exists(recdir):
+            os.makedirs(recdir)
         list_of_recs = glob.glob("%s/*" % recdir)
         if list_of_recs:
             latest_rec = max(list_of_recs, key=os.path.getmtime)
