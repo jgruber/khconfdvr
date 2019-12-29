@@ -13,7 +13,7 @@ var isLive = false;
 var showMenu = function () {
     var osmenu = document.getElementById('osmenu');
     osmenu.classList.add('osmenuclicked');
-    if(isLive) {
+    if (isLive) {
         getCount();
     } else {
         getRecordings();
@@ -131,22 +131,22 @@ var togglePlay = function () {
 };
 
 
-var setMenu = function() {
-    if(isLive) {
+var setMenu = function () {
+    if (isLive) {
         addMenu();
     } else {
         removeMenu();
     }
 };
 
-var removeMenu = function() {
+var removeMenu = function () {
     var osmenu = document.getElementById('osmenu');
     if (osmenu) {
         osmenu.style.setProperty('display', 'none');
     }
 };
 
-var addMenu = function() {
+var addMenu = function () {
     var osmenu = document.getElementById('osmenu');
     if (osmenu) {
         osmenu.style.setProperty('display', 'block');
@@ -257,7 +257,7 @@ var getViewerPin = function (message) {
     }
     osdContent(formContent);
     var pininput = document.getElementById('viewerpin')
-    if(pininput) pininput.focus();
+    if (pininput) pininput.focus();
 };
 
 
@@ -309,18 +309,22 @@ var deccrementCount = function () {
 
 
 var setCount = function () {
-    console.log('submitting Count');
-    var countReq = new XMLHttpRequest();
-    countReq.addEventListener('load', function () {
-        osdContent(null);
-    });
-    countReq.open('POST', '/count');
-    countReq.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    countReq.send(JSON.stringify({ 'count': currentCount }));
+    if (isLive) {
+        console.log('submitting Count');
+        var countReq = new XMLHttpRequest();
+        countReq.addEventListener('load', function () {
+            osdContent(null);
+        });
+        countReq.open('POST', '/count');
+        countReq.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        countReq.send(JSON.stringify({ 'count': currentCount }));
+    } else {
+        currentCount = 1;
+    }
 };
 
 
-var getRecordings = function() {
+var getRecordings = function () {
     console.log('getting recordings');
 };
 
