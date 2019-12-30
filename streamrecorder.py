@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import glob
 import json
 import signal
 import logging
@@ -11,7 +12,7 @@ import tempfile
 import threading
 import time
 
-FFMPEGCMD = '/usr/bin/ffmpeg'
+FFMPEGCMD = '/usr/bin/ffmpeg -y'
 ARGS = '-c copy'
 
 LOGFORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -96,9 +97,41 @@ def record_stream(tmppath, url):
     LOG.debug('running blocking command: %s' % cmd)
     p = subprocess.Popen(cmd, shell=True)
     p_status = p.wait()
-    dstpath = os.path.join(DESTDIR, os.path.basename(tmppath))
-    LOG.debug('moving %s to %s' % (tmppath, dstpath))
-    shutil.move(tmppath, dstpath)
+
+
+def publish_recordinging(tmppath, datestring):
+    videofiles = []
+    for filePath in glob.glob("%s/%s*.%s" % (DESTDIR, datestring, CONFIG['RECORDER_FILE_TYPE'])):
+        videofiles.append(filePath)
+    if not videofiles:
+        dstpath = os.path.join(DESTDIR, os.path.basename(tmppath))
+        LOG.debug('moving %s to %s' % (tmppath, dstpath))
+        shutil.move(tmppath, dstpath)
+    else:
+        videofiles.append(tmppath)
+        LOG.info('found %d video files from datestring %s' % (len(videofiles), datestring))
+        inputpath = "%s/input.txt" % os.path.dirname(os.path.abspath(tmppath))
+        input_file = open(inputpath, 'w+')
+        for filePath in videofiles:
+            input_file.write("file %s\n" % filePath)
+        input_file.close()
+        dstpath = "%s/%s_%s.%s" % (DESTDIR, datestring, str(int(time.time())), CONFIG['RECORDER_FILE_TYPE'])
+        cmd = "%s -f concat -safe 0 -i %s -c copy %s" % (FFMPEGCMD, inputpath, dstpath)
+        LOG.debug('running blocking command: %s' % cmd)
+        p = subprocess.Popen(cmd, shell=True)
+        p_status = p.wait()
+        if p_status == 0:
+            for filePath in videofiles:
+                try:
+                    os.remove(filePath)
+                except:
+                    LOG.error('error removing video fragment file %s' % filePath)
+        else:
+            LOG.error('error concatinating video files with datestring %s' % datestring)
+            try:
+                os.remove(dstpath)
+            except:
+                LOG.error('could not delete tempfile: %s' % dstpath)
 
 
 class recorderThread (threading.Thread):
@@ -115,6 +148,7 @@ class recorderThread (threading.Thread):
                 if 'live' in streams and streams['live']:
                     moviefile = get_recording_file_name(streams['meetingDateString'], get_temp_record_dir())
                     record_stream(moviefile, streams['url'])
+                    publish_recordinging(moviefile, streams['meetingDateString'])
                 else:
                     LOG.debug('there is no live HLS at this time')
             except Exception as ex:
