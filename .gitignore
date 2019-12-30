@@ -3,5 +3,6 @@
 !static/recordings/processing.mp4
 !static/posters/blank.jpg
 !static/posters/processing_mp4.jpg
+static/app_*.js
 static/posters/*
 __pycache__

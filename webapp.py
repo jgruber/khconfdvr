@@ -44,6 +44,8 @@ CONFIG_FILE = None
 
 LOGFORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
+JSAPP = None
+
 congregationName = None
 liveMeetingVriId = None
 liveMeetingVdrId = None
@@ -135,7 +137,7 @@ def config_service():
                     raise ClientError(registry, status_code=400)
         return jsonify({'status': 'ok'})
     elif request.method == 'GET':
-        return render_template('config.html')
+        return render_template('config.html', jsapp=JSAPP)
 
 
 @app.route('/viewerpin', methods=['POST'])
@@ -241,13 +243,13 @@ def get_meetings():
 def index():
     if not CONFIG['TOKEN']:
         LOG.info('requesting initial config and admin pin')
-        return render_template('config.html')
+        return render_template('config.html', jsapp=JSAPP)
     else:
         if CONFIG['VIEWER_PIN'] and ( not CONFIG['VIEWER_PIN'] == '000000' ):
-            return render_template('viewerpin.html')
+            return render_template('viewerpin.html', jsapp=JSAPP)
         else:
-            return render_template('getvideo.html')
-        return render_template('getvideo.html')
+            return render_template('getvideo.html', jsapp=JSAPP)
+        return render_template('getvideo.html', jsapp=JSAPP)
 
 
 @app.route('/<path:path>')
@@ -274,6 +276,21 @@ def load_config(config_file=None):
         LOG.debug('loading config from %s' % config_file)
         with open(config_file) as json_data_file:
             CONFIG = json.load(json_data_file)
+
+
+def get_js_alias(jsfilename):
+    scriptdir = os.path.dirname(os.path.realpath(__file__))
+    jsfilepath = "%s/%s" % (scriptdir, jsfilename)
+    aliasfilename = "app_%s.js" % str(int(os.path.getctime(jsfilepath)))
+    aliasfilepath = "%s/static/%s" % (scriptdir, aliasfilename)
+    if not os.path.exists(aliasfilepath):
+        for filePath in glob.glob("%s/static/app_*.js" % scriptdir):
+            try:
+                os.remove(filePath)
+            except:
+                LOG.error('can not remove old script symlink %s' % aliasfilepath)
+        os.symlink(jsfilepath, aliasfilepath)
+    return aliasfilename
 
 
 def get_live_meeting_count():
@@ -452,6 +469,7 @@ class pollingThread (threading.Thread):
 
 
 def initialize():
+    global JSAPP
     LOG.setLevel(logging.DEBUG)
     config_file = os.getenv('CONFIG_FILE', None)
     load_config(config_file)
@@ -471,6 +489,9 @@ def initialize():
     LOG.setLevel(CONFIG['LOGLEVEL'])
     requests_log.setLevel(CONFIG['LOGLEVEL'])
     app.logger.setLevel(CONFIG['LOGLEVEL'])
+
+    LOG.info('creating symlink to versioned webapp.js')
+    JSAPP = get_js_alias('webapp.js')
 
     polling_thread = pollingThread()
     polling_thread.start()
