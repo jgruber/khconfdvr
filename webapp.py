@@ -187,7 +187,7 @@ def current_video_service():
             latest_rec = max(list_of_recs, key=os.path.getmtime)
             recording_file = os.path.basename(latest_rec)
             datestring = datetime.datetime.fromtimestamp(
-                os.path.getmtime(latest_rec)).strftime('%m-%d-%Y')
+                os.path.getctime(latest_rec)).strftime('%m-%d-%Y')
             LOG.info('directing cliet to %s meeting recording %s from %s' %
                      (CONFIG['CONGREGATION_NAME'], recording_file, datestring))    
             rec = {
