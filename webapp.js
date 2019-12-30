@@ -9,6 +9,9 @@ var waitForLiveStreamPlay = null;
 var currentCount = 1;
 var isLive = false;
 
+var _osd_click_handlers = [];
+var _osd_keydown_handlers = [];
+
 
 var showMenu = function () {
     var osmenu = document.getElementById('osmenu');
@@ -153,8 +156,57 @@ var addMenu = function () {
     }
 };
 
-osdContent = function (content) {
+var addOSDClickListner = function(handler) {
     var osd = document.getElementById('osd');
+    if (osd) {
+        _osd_click_handlers.push(handler);
+        osd.addEventListener('click', handler);
+    }
+};
+
+var removeAllOSDClickListeners = function () {
+    var osd = document.getElementById('osd');
+    if (osd) {
+        for(var i = _osd_click_handlers.length; i--;) {
+            osd.removeEventListener('click', _osd_click_handlers[i]);
+        }
+        _osd_click_handlers = [];
+    }
+};
+ 
+var addOSDKeyDownListner = function(handler) {
+    var osd = document.getElementById('osd');
+    if (osd) {
+        _osd_keydown_handlers.push(handler);
+        osd.addEventListener('keydown', handler);
+    }
+};
+
+var removeAllOSDKeyDownListeners = function () {
+    var osd = document.getElementById('osd');
+    if (osd) {
+        for(var i = _osd_keydown_handlers.length; i--;) {
+            osd.removeEventListener('keydown', _osd_keydown_handlers[i]);
+        }
+        _osd_keydown_handlers = [];
+    }
+};
+
+var osdContent = function (content, onClick, onEnter) {
+    var osd = document.getElementById('osd');
+    removeAllOSDClickListeners();
+    removeAllOSDKeyDownListeners();
+    if(onClick) {
+        addOSDClickListner(onClick);
+    }
+    if(onEnter) {
+        addOSDKeyDownListner(function(evt) {
+            evt = evt || window.event;
+            if (evt.keyCode == 13) {
+                onEnter();
+            }
+        });
+    }
     var osdContent = document.getElementById('osdContent');
     if (content) {
         removeMenu();
@@ -258,7 +310,7 @@ var getViewerPin = function (message) {
         formContent = '<p>' + message + '</p>' + formContent;
     }
     osdContent(formContent);
-    var pininput = document.getElementById('viewerpin')
+    var pininput = document.getElementById('viewerpin');
     if (pininput) pininput.focus();
 };
 
@@ -286,27 +338,34 @@ var setViewerPin = function () {
 
 
 var getCount = function () {
-    var formContent = "<label> COUNT </label>  <span id='count'></span>  ";
-    formContent += "<input type='button' value=' + ' onclick='incrementCount();'>";
-    formContent += "<input type='button' value=' - ' onclick='deccrementCount();'><br />";
-    formContent += "<p><input type='button' value=' Enter ' onclick='setCount()'></p>";
-    osdContent(formContent);
+    var formContent = "<label> COUNT: </label>  <span id='count'></span>  ";
+    formContent += "<input type='button' id='incrementCount' value=' + ' onclick='incrementCount(event, this);'>";
+    formContent += "<input type='button' id='decrementCount' value=' - ' onclick='deccrementCount(event, this);'><br />";
+    formContent += "<p><input type='button' id='enterCount' value=' Enter ' onclick='setCount()'></p>";
+    osdContent(formContent,setCount,setCount);
     document.getElementById('count').innerHTML = currentCount;
+    document.getElementById('enterCount').focus();
 };
 
 
-var incrementCount = function () {
+var incrementCount = function (event, el) {
     currentCount++;
     document.getElementById('count').innerHTML = currentCount;
+    if (event.stopPropagation) {
+        event.stopPropagation();
+    }
 };
 
 
-var deccrementCount = function () {
+var deccrementCount = function (event, el) {
     currentCount--;
     if (currentCount < 1) {
         currentCount = 1;
     }
     document.getElementById('count').innerHTML = currentCount;
+    if (event.stopPropagation) {
+        event.stopPropagation();
+    }
 };
 
 
