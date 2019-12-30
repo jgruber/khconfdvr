@@ -183,9 +183,11 @@ var keyboardBindings = function () {
             evt = evt || window.event;
             if (evt.ctrlKey && evt.keyCode == 67) {
                 configure();
-            } else {
-                togglePlay();
-            }
+            } 
+            // remove for Silk Browser issues
+            //else {
+            //    togglePlay();
+            //}
         }
     };
 };
