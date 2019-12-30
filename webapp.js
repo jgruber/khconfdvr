@@ -100,6 +100,7 @@ var showVideo = function (url, poster) {
     });
     player.on(Clappr.Events.PLAYER_ERROR, function () {
         showVideo('/processing_en.mp4');
+        osdContent(null);
         if (watchForLiveStream) {
             console.log('clearing live stream updates poller');
             clearInterval(watchForLiveStream);
