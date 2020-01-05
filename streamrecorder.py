@@ -102,11 +102,13 @@ def record_stream(tmppath, url):
 
 def add_faststart(tmppath):
     LOG.debug('adding movflags and faststart to video file %s' % tmppath)
-    outfile = "%tmp_tmp" % tmppath
+    tmpsplit = os.path.splitext(tmppath)
+    outfile = "%s_tmp%s" % (tmpsplit[0], tmpsplit[1])
     cmd = "%s -i %s -c copy -movflags +faststart %s" % (FFMPEGCMD, tmppath, outfile)
     p = subprocess.Popen(cmd, shell=True)
     p_status = p.wait()
     if p_status == 0:
+        LOG.debug('moving %s to %s' % (outfile, tmppath))
         shutil.move(outfile, tmppath)
         return True
     else:
