@@ -63,7 +63,7 @@ def get_recording_file_name(datestring, tmpdir):
 def query_stream():
     STREAM_URL = 'http://localhost:%s/video' % CONFIG['WEB_SERVICE_PORT']
     try:
-        resp = requests.get('http://localhost:%s/video' % CONFIG['WEB_SERVICE_PORT'])
+        resp = requests.get(STREAM_URL)
         resp.raise_for_status()
         return resp.json()
     except Exception as ex:
@@ -97,9 +97,27 @@ def record_stream(tmppath, url):
     LOG.debug('running blocking command: %s' % cmd)
     p = subprocess.Popen(cmd, shell=True)
     p_status = p.wait()
+    return p_status
+
+
+def add_faststart(tmppath):
+    LOG.debug('adding movflags and faststart to video file %s' % tmppath)
+    tmpsplit = os.path.splitext(tmppath)
+    outfile = "%s_tmp%s" % (tmpsplit[0], tmpsplit[1])
+    cmd = "%s -i %s -c copy -movflags +faststart %s" % (FFMPEGCMD, tmppath, outfile)
+    p = subprocess.Popen(cmd, shell=True)
+    p_status = p.wait()
+    if p_status == 0:
+        LOG.debug('moving %s to %s' % (outfile, tmppath))
+        shutil.move(outfile, tmppath)
+        return True
+    else:
+        LOG.error('could not add movflags and faststart to video file %s' % tmppath)
+        return False
 
 
 def publish_recordinging(tmppath, datestring):
+    add_faststart(tmppath)
     videofiles = []
     for filePath in glob.glob("%s/%s*.%s" % (DESTDIR, datestring, CONFIG['RECORDER_FILE_TYPE'])):
         videofiles.append(filePath)
@@ -159,14 +177,15 @@ class recorderThread (threading.Thread):
         self.recorderExit.set()
         super().join()
 
-def recorder_exit(*args):
+
+def sig_exit(*args):
     global KEEP_RECORDING
     KEEP_RECORDING = False
 
 
 def main():
     signal.signal(signal.SIGHUP, load_config)
-    signal.signal(signal.SIGINT, recorder_exit)
+    signal.signal(signal.SIGINT, sig_exit)
     LOG.setLevel(logging.DEBUG)
     config_file = os.getenv('CONFIG_FILE', None)
     load_config(config_file)
